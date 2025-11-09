@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 from typing import Any
@@ -12,9 +11,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-# Пытаемся загрузить WEATHER_API из переменных окружения
-logger.info("Пытаемся загрузить WEATHER_API из переменных окружения")
 WEATHER_API = os.getenv("WEATHER_API")
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5"
 
@@ -30,25 +26,20 @@ async def make_weather_request(endpoint: str, params: dict[str, Any]) -> dict[st
         JSON ответ от API или None в случае ошибки
 
     """
-    # Проверяем наличие API ключа
     if not WEATHER_API:
         logger.error("WEATHER_API не найден в переменных окружения")
         return None
 
-    # Добавляем API ключ к параметрам запроса
     params["appid"] = WEATHER_API
-    # Устанавливаем метрическую систему (Цельсий, метры/сек)
-    params["lang"] = "ru"  # Русский язык для описаний
+    params["lang"] = "ru"
 
-    # Формируем полный URL
     url = f"{OPENWEATHER_BASE_URL}/{endpoint}"
 
     try:
-        # Выполняем асинхронный HTTP запрос
         async with httpx.AsyncClient() as client:
             logger.info(f"Запрос к API: {url}")
             response = await client.get(url, params=params, timeout=30.0)
-            response.raise_for_status()  # Вызовет исключение при ошибке HTTP
+            response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
         logger.error(f"HTTP ошибка: {e.response.status_code} - {e.response.text}")
@@ -67,32 +58,27 @@ async def get_forecast(city: str, days: int = 3, units: str = "metric") -> str |
         units: Система измерения - "metric" (Цельсий) или "imperial" (Фаренгейт)
 
     Returns:
-        Строка с прогнозом погоды или сырыми данными от API
+        Строка с прогнозом погоды от API
 
     """
     logger.info(f"Запрос прогноза для города: {city} на {days} дней")
 
-    # Ограничиваем количество дней
     days = min(max(days, 1), 5)
 
-    # Формируем параметры запроса
     params = {
         "q": city,
         "units": units,
-        "cnt": days * 8,  # API возвращает данные каждые 3 часа, 8 записей = 1 день
+        "cnt": days * 8,
     }
 
-    # Выполняем запрос к API
     data = await make_weather_request("forecast", params)
 
-    # Обработка ошибок
     if not data:
         return f"❌ Не удалось получить прогноз для города '{city}'."
 
     if "cod" not in data or data["cod"] != "200":
         return f"❌ Ошибка API: {data.get('message', 'Неизвестная ошибка')}"
 
-    # Возвращаем все полученные данные от API
     logger.info(f"Успешно получены сырые данные прогноза для {city}")
 
     times = ["15:00:00", "12:00:00", "09:00:00"]
@@ -109,13 +95,3 @@ async def get_forecast(city: str, days: int = 3, units: str = "metric") -> str |
         )
 
     return result
-
-
-async def main():
-    async with asyncio.TaskGroup() as tg:
-        task = tg.create_task(get_forecast("Червлённая", days=5))
-    print(task.result())
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

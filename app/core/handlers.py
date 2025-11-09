@@ -15,11 +15,27 @@ ACCESS_PASSWORD = "e5ae93bd8095fbd86c25a110bbf194a5a1a209f1e8eb31bb30c8b0ecbe254
 
 
 class RegisterState(StatesGroup):
+    """Группа состояний для процесса регистрации пользователя.
+
+    Содержит состояния, используемые в конечном автомате (FSM) при авторизации.
+    """
+
     waiting_for_password = State()
 
 
 @router.message(CommandStart())
 async def start_handler(message: Message, state: FSMContext):
+    """Обработчик команды /start.
+
+    Проверяет, существует ли пользователь в базе данных.
+    Если существует — приветствует. Если нет — запрашивает пароль доступа
+    и переводит пользователя в состояние ожидания ввода пароля.
+
+    Args:
+        message (Message): Объект входящего сообщения от пользователя.
+        state (FSMContext): Контекст состояния конечного автомата.
+
+    """
     user_id = message.from_user.id
     user = await get_user_by_id(user_id)
     if user:
@@ -31,6 +47,18 @@ async def start_handler(message: Message, state: FSMContext):
 
 @router.message(RegisterState.waiting_for_password)
 async def password_handler(message: Message, state: FSMContext):
+    """Обработчик ввода пароля при регистрации.
+
+    Проверяет хешированный ввод пользователя на соответствие
+    заранее заданному хешу ACCESS_PASSWORD. При успехе — добавляет
+    пользователя в базу данных, отправляет подтверждение и очищает состояние.
+    Иначе — запрашивает ввод пароля повторно.
+
+    Args:
+        message (Message): Сообщение с введённым паролем.
+        state (FSMContext): Контекст состояния конечного автомата.
+
+    """
     user_id = message.from_user.id
     if hash_password(message.text.strip()) == ACCESS_PASSWORD:
         await add_user(user_id, message.from_user.username or "")
@@ -46,6 +74,16 @@ from app.services.weather import get_forecast  # Добавьте этот им�
 
 @router.message(Command("get"))
 async def get_generate(message: Message):
+    """Обработчик команды /get.
+
+    Получает прогноз погоды для города Червлённая на 5 дней,
+    передаёт его в систему ИИ-советника, сохраняет запрос и ответ в базу,
+    затем отправляет пользователю результат совета.
+
+    Args:
+        message (Message): Входящее сообщение с командой /get.
+
+    """
     weather_forecast = await get_forecast("Червлённая", days=5)
 
     if isinstance(weather_forecast, list):
@@ -54,9 +92,7 @@ async def get_generate(message: Message):
     result = await ai_generate(weather_forecast)
 
     await save_weather_request(
-        user_id=message.from_user.id,
-        forecast_text=weather_forecast,
-        ai_response=result
+        user_id=message.from_user.id, forecast_text=weather_forecast, ai_response=result
     )
 
     await message.answer(result)
