@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from openai import APIConnectionError, APIError, AsyncOpenAI, BadRequestError
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from app.services.weather import get_forecast
 from app.tools.utils import clean_text
 
 load_dotenv()
@@ -18,8 +17,8 @@ client = AsyncOpenAI(
 )
 
 
-async def ai_generate() -> str | None:
-    message = await generate_prompt()
+async def ai_generate(weather_forecast: str) -> str | None:
+    message = await generate_prompt(weather_forecast)
     try:
         completion = await client.chat.completions.create(
             model="openai/gpt-4o",
@@ -44,7 +43,7 @@ async def ai_generate() -> str | None:
         print(f"Неожиданная ошибка: {e}")
 
 
-async def generate_prompt():
+async def generate_prompt(weather_forecast: str):
     prompt = """Ты дружелюбный метео-консультант для сап-серфера. 
     Проанализируй прогноз погоды и дай практические рекомендации в разговорном стиле.
 
@@ -70,10 +69,9 @@ async def generate_prompt():
 
     Используй естественный язык, не перечисляй все данные подряд. Сосредоточься на временном окне 11:00-14:00."""
 
-    weather = await get_forecast("Червлённая", days=5)
     message = [
         ChatCompletionSystemMessageParam(role="system", content=prompt),
-        ChatCompletionUserMessageParam(role="user", content=f"{weather}"),
+        ChatCompletionUserMessageParam(role="user", content=f"{weather_forecast}"),
     ]
 
     return message

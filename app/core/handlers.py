@@ -40,7 +40,23 @@ async def password_handler(message: Message, state: FSMContext):
         await message.answer("Неверный пароль. Попробуйте еще раз:")
 
 
+from app.data.request import save_weather_request
+from app.services.weather import get_forecast  # Добавьте этот импорт
+
+
 @router.message(Command("get"))
 async def get_generate(message: Message):
-    result = await ai_generate()
+    weather_forecast = await get_forecast("Червлённая", days=5)
+
+    if isinstance(weather_forecast, list):
+        weather_forecast = "\n".join(weather_forecast)
+
+    result = await ai_generate(weather_forecast)
+
+    await save_weather_request(
+        user_id=message.from_user.id,
+        forecast_text=weather_forecast,
+        ai_response=result
+    )
+
     await message.answer(result)

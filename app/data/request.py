@@ -22,3 +22,19 @@ async def add_user(user_id: int, username: str):
             await session.commit()
     except Exception as e:
         print(f"Ошибка добавления пользователя: {e}")
+
+
+from app.data.models import WeatherRequests
+
+async def save_weather_request(user_id: int, forecast_text: str, ai_response: str):
+    try:
+        async with async_session() as session:
+            request = WeatherRequests(
+                user_id=user_id,
+                forecast_text=forecast_text,
+                ai_response=ai_response
+            )
+            session.add(request)
+            await session.commit()
+    except Exception as e:
+        print(f"Ошибка сохранения запроса погоды: {e}")

@@ -1,9 +1,11 @@
 import os
 
 from dotenv import load_dotenv
+from datetime import datetime
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import DateTime, Text
 
 load_dotenv()
 
@@ -32,6 +34,15 @@ class Users(Base):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True, autoincrement=False)
     username = Column(String)
+
+
+class WeatherRequests(Base):
+    __tablename__ = "weather_requests"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer)
+    forecast_text = Column(Text)  # Текст прогноза от get_forecast
+    ai_response = Column(Text)    # Ответ от ИИ
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 async def init_models():
