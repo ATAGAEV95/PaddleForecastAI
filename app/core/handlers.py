@@ -5,7 +5,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 
 from app.core.weather_advisor import ai_generate
-from app.data.request import add_user, get_user_by_id
+from app.data.request import add_user, get_user_by_id, save_weather_request
+from app.services.weather import get_forecast
 from app.tools.utils import hash_password
 
 router = Router()
@@ -66,10 +67,6 @@ async def password_handler(message: Message, state: FSMContext):
         await state.clear()
     else:
         await message.answer("Неверный пароль. Попробуйте еще раз:")
-
-
-from app.data.request import save_weather_request
-from app.services.weather import get_forecast  # Добавьте этот импорт
 
 
 @router.message(Command("get"))
