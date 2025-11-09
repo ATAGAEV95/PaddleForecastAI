@@ -1,0 +1,25 @@
+[project]
+name = "paddleforecastai"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "aiogram>=3.22.0",
+    "asyncpg>=0.30.0",
+    "dotenv>=0.9.9",
+    "httpx>=0.28.1",
+    "openai>=2.7.1",
+    "sqlalchemy>=2.0.44",
+]
+
+[tool.ruff]
+line-length = 101
+fix = true
+
+[tool.ruff.lint]
+extend-select = ["E501", "UP", "D", "I", "ANN001", "ANN201"]
+ignore = ["D100"]
+
+[tool.ruff.format]
+docstring-code-line-length = 100
+#quote-style = "single"
