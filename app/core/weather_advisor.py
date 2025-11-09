@@ -24,7 +24,7 @@ async def ai_generate() -> str | None:
         completion = await client.chat.completions.create(
             model="openai/gpt-4o",
             messages=message,
-            temperature=0.7,
+            temperature=0.8,
         )
 
         response_text = completion.choices[0].message.content
