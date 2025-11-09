@@ -3,13 +3,14 @@ import os
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
+
 from app.core.handlers import router
 from app.data.models import init_models
-
 
 load_dotenv()
 
 TG_TOKEN = os.getenv("TG_TOKEN")
+
 
 async def main() -> None:
     """Основная асинхронная функция запуска бота и планировщика.

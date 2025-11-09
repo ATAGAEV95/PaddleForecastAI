@@ -3,7 +3,7 @@ import re
 
 
 def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 
 def clean_text(text):

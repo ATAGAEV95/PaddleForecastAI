@@ -69,13 +69,8 @@ async def generate_prompt():
 
     weather = await get_forecast("Червлённая", days=5)
     message = [
-        ChatCompletionSystemMessageParam(
-            role="system",
-            content=prompt
-        ),
-        ChatCompletionUserMessageParam(
-            role="user",
-            content=f"{weather}")
+        ChatCompletionSystemMessageParam(role="system", content=prompt),
+        ChatCompletionUserMessageParam(role="user", content=f"{weather}"),
     ]
 
     return message

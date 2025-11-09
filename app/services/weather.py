@@ -95,16 +95,18 @@ async def get_forecast(city: str, days: int = 3, units: str = "metric") -> str |
     # Возвращаем все полученные данные от API
     logger.info(f"Успешно получены сырые данные прогноза для {city}")
 
-    times = ['15:00:00', '12:00:00', '09:00:00']
-    afternoon = [lst for lst in data['list'] if lst['dt_txt'].split()[1] in times]
+    times = ["15:00:00", "12:00:00", "09:00:00"]
+    afternoon = [lst for lst in data["list"] if lst["dt_txt"].split()[1] in times]
 
     result = []
     for lst in afternoon:
-        result.append(f"Дата время: {lst['dt_txt']}\n"
-                      f"Температура: {lst['main']['temp']}\n"
-                      f"Скорость ветра: {lst['wind']['speed']}\n"
-                      f"Влажность: {lst['main']['humidity']}\n"
-                      f"Условия: {lst['weather'][0]['description']}\n")
+        result.append(
+            f"Дата время: {lst['dt_txt']}\n"
+            f"Температура: {lst['main']['temp']}\n"
+            f"Скорость ветра: {lst['wind']['speed']}\n"
+            f"Влажность: {lst['main']['humidity']}\n"
+            f"Условия: {lst['weather'][0]['description']}\n"
+        )
 
     return result
 

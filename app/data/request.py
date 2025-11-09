@@ -1,7 +1,6 @@
 from sqlalchemy import select
 
-from app.data.models import async_session
-from app.data.models import Users
+from app.data.models import Users, async_session
 
 
 async def get_user_by_id(user_id: int):
