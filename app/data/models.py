@@ -2,9 +2,24 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, Integer, String, Text
-from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.ext.asyncio import (
+    AsyncAttrs,
+    AsyncEngine,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.orm import DeclarativeBase, relationship
 
 load_dotenv()
 
@@ -12,18 +27,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 SCHEMA = "public"
 
 
-def get_engine(schema: str):
+def get_engine(schema: str) -> AsyncEngine:
     """Создаёт и возвращает асинхронный движок SQLAlchemy с указанным схемой.
 
     Устанавливает параметр search_path в соединении, чтобы все запросы выполнялись
     в заданной схеме PostgreSQL.
-
-    Args:
-        schema (str): Название схемы в базе данных.
-
-    Returns:
-        AsyncEngine: Асинхронный движок SQLAlchemy.
-
     """
     return create_async_engine(
         DATABASE_URL, connect_args={"server_settings": {"search_path": schema}}
@@ -74,7 +82,37 @@ class WeatherRequests(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-async def init_models():
+class Friends(Base):
+    """Модель друзей для отслеживания их рабочих графиков."""
+
+    __tablename__ = "friends"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+
+    work_days = relationship("WorkDay", back_populates="user")
+
+
+class WorkDay(Base):
+    """Модель для хранения рабочих дней друзей."""
+
+    __tablename__ = "work_days"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("friends.id"), nullable=False)
+    date = Column(Date, nullable=False, index=True)  # индекс для быстрого поиска по дате
+    is_working = Column(Boolean, default=True)
+
+    user = relationship("Friends", back_populates="work_days")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "date", name="uq_user_date"
+        ),  # один день = одна запись на человека
+    )
+
+
+async def init_models() -> None:
     """Инициализирует модели базы данных.
 
     Создаёт таблицы в базе данных, если они ещё не существуют.
