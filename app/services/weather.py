@@ -16,7 +16,7 @@ OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5"
 
 
 async def make_weather_request(endpoint: str, params: dict[str, Any]) -> dict[str, Any] | None:
-    """Вспомогательная функция для выполнения запросов к OpenWeatherMap API
+    """Вспомогательная функция для выполнения запросов к OpenWeatherMap API.
 
     Args:
         endpoint: Конечная точка API (например, "weather" или "forecast")
@@ -50,7 +50,7 @@ async def make_weather_request(endpoint: str, params: dict[str, Any]) -> dict[st
 
 
 async def get_forecast(city: str, days: int = 3, units: str = "metric") -> str | list[str]:
-    """Получить прогноз погоды на несколько дней
+    """Получить прогноз погоды на несколько дней.
 
     Args:
         city: Название города на русском или английском
